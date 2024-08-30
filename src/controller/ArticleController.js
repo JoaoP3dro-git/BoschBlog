@@ -22,7 +22,7 @@ class ArticleController {
         if (text.length < 15)
             return res.status(400).send({ message: "o artigo não pode ser menor que 15 caracteres" });
         try {
-            const author = await authorController.getAuthor(authorid);
+            const author = await AuthorController.getAuthor(authorid);
             const article = {
                 title,
                 text,
@@ -37,6 +37,20 @@ class ArticleController {
         } catch (error) {
             ArticleController.createLog(error);
             return res.status(500).send({ error: "Falha ao salvar o artigo", data: error.message });
+        }
+    }
+
+    static async likeArticle(req, res) {
+        const { id } = req.params;
+        if (!id)
+            return res.status(400).send({ message: "No id provider" })
+        try {
+            const article = await Article.findById(id);
+            await Article.findByIdAndUpdate({ _id: id }, { likes: ++article.likes })
+            return res.status(200).send();
+        } catch (error) {
+            ArticleController.createLog(error);
+            return res.status(500).send({ error: "Falha ao curtir", data: error.message })
         }
     }
 }
